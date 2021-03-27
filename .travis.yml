@@ -1,0 +1,21 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t zarerastromox/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true zarerastromox/react-test npm test
+
+after_success:
+  - docker build -t zarerastromox/multi-client ./client
+  - docker build -t zarerastromox/multi-nginx ./nginx
+  - docker build -t zarerastromox/multi-server ./server
+  - docker build -t zarerastromox/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password--stdin
+  - docker push zarerastromox/multi-client
+  - docker push zarerastromox/multi-nginx
+  - docker push zarerastromox/multi-server
+  - docker push zarerastromox/multi-worker
